@@ -16,8 +16,12 @@ You could use this function to make your glance persistent (in your database for
 It is located here js/frame_and_note.js
 
 function makeFrame(id, url, left_value, top_value, width_value, height_value, left_cnv_value, top_cnv_value, inner_width_value)
+
+
 This function is used to load existing frames
 In the frame.html you'll see the following code:
+
+
 jQuery(document).ready(function() {  
   makeFrame(frame_id, decodeURIComponent("http://www.australia.com"), -11, -562, 993, 261, 46, 31, 1024);
   makeFrameSet(frame_id);
