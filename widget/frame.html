@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Glance maker</title>
+<meta name="keywords" content="glance">
+<meta name="description" content="Glance maker is a javascript plugin that enables you to embed a web page, with the possibility of resizing the content.">
+                                                                                                                            
+<script src="../js/jquery-1.7.1.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.8.17.d-n-d-resize.js"></script>
+<script type="text/javascript" src="../js/frame_and_note.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/common.css"/>
+<script type="text/javascript">
+var frame_id = 1;
+var pageX;
+var pageY;
+var deltaX = 0;
+var deltaY = 0;
+
+var leftValue = 0;
+var topValue = 0;
+
+var mousepressed = false;
+var allowConfirm = true;
+
+
+jQuery(document).ready(function() {		
+	//leftValue [-11],topValue [-562],widthValue [993],heightValue [261], leftCanvas [46], topCanvas [31], innerWidthValue [1024]                                                                
+    makeFrame(frame_id, decodeURIComponent("http://www.australia.com"), -11, -562, 993, 261, 46, 31, 1024);
+    makeFrameSet(frame_id);
+    $("#inneriframe"+frame_id).attr("uid", "unique_identifier");
+    $( "#dragger"+frame_id).draggable();
+    $( "#resizer"+frame_id).draggable();
+         
+  	frame_id = frame_id+1;
+  //handle mouseout and mouse on browser event
+  function handler(e) {
+     e = e || event
+     if (e.type == 'mouseover') {
+       var fromElem = e.fromElement || e.relatedTarget;
+       var toElem = e.srcElement || e.target;
+     } else
+     if (e.type == 'mouseout') {
+       fromElem = e.srcElement || e.target;
+       toElem = e.toElement || e.relatedTarget;
+     }
+
+     function str(el) { return el ? (el.id || el.nodeName) : 'null'; }
+     if(str(toElem) == 'null' || str(toElem) == 'HTML'){
+        //console.log("From "+str(fromElem)+ " to "+str(toElem));
+     	allowConfirm = false;
+        //console.log("allowConfirm on mouseout: "+allowConfirm);
+     }else{
+        allowConfirm = true;
+        //console.log("allowConfirm on mousemove: "+allowConfirm);
+     }
+
+  }
+  document.body.onmouseover = document.body.onmouseout = handler;
+
+  //height handling
+  //height = getCurrDocumentHeight();
+  //parent.updateHeight(height);	  	  
+});
+
+
+function reload(id) {
+   var f = document.getElementById("inneriframe"+id);
+   loadUrl(id, f.src);
+}
+
+function loadUrl(id, url){
+   if(/^www.youtube.com/i.test(url.replace("http://", ""))){
+      $("#inneriframe"+id).css("width", 420+"px");
+      $("#inneriframe"+id).css("height", 315+"px");
+      $("#inneriframe"+id).css("top", 25+"px");
+   }else{
+      $("#inneriframe"+id).css("width", 1024+"px");
+      $("#inneriframe"+id).css("height", 20000+"px");
+   }
+
+   if(url.trim() != 'about:home'){
+      if(!(/^http/i.test(url))){
+          url = "http://"+url;
+      }
+   	$("#inneriframe"+id).attr("src", url);
+   }
+}
+
+function doDrag(obj, id){
+   if(parseInt($('#special'+id).css('height').replace('px', '')) == 0){
+      $('#special'+id).css('height', $('#special'+id).attr('old-height'));
+   }
+   
+   newTop = parseInt($(obj).css('top').replace('px', ''));
+   newLeft = parseInt($(obj).css('left').replace('px', ''));
+   width = parseInt($('#special'+id).css('width').replace('px', ''));
+   height = parseInt($('#special'+id).css('height').replace('px', ''));
+
+   $('#special'+id).css('left', (newLeft-20)+'px');
+   $('#special'+id).css('top', newTop+'px');
+   $('#outerdiv'+id).css('left', (newLeft-20)+'px');
+   $('#outerdiv'+id).css('top', (newTop)+'px');
+   $('#title'+id).css('left', (newLeft-20)+'px');
+   $('#title'+id).css('top', newTop+'px');
+
+   $('#resizer'+id).css('left', newLeft-20+width);
+   $('#resizer'+id).css('top', newTop+height);
+   $('#resizer'+id).attr('left', newLeft-20+width);
+   $('#resizer'+id).attr('top', newTop+height);
+
+   //$("#sticky-container").css("height", getDocumentHeight());
+}
+
+function doEndJob(id){
+   //ajust resizer and dragger
+   top_cnv_value = $("#outerdiv"+id).css("top").replace('px', '');
+   left_cnv_value = $("#outerdiv"+id).css("left").replace('px', '');
+   width_value = $("#outerdiv"+id).css("width").replace('px', '');
+   height_value = $("#outerdiv"+id).css("height").replace('px', '');
+   saveFrame(id, $("#inneriframe"+id).attr("src"), $("#inneriframe"+id).css("left").replace('px', ''), $("#inneriframe"+id).css("top").replace('px', ''), width_value, height_value, left_cnv_value, top_cnv_value);
+}
+
+function doResize(obj, id){
+   if(parseInt($('#special'+id).css('height').replace('px', '')) == 0){
+      $('#special'+id).css('height', $('#special'+id).attr('old-height'));
+   }
+
+   initialHeight = $('#special'+id).css('height').replace('px', '');
+   initialWidth = $('#special'+id).css('width').replace('px', '');
+   deltaHeight =  $(obj).css('top').replace('px', '') - $(obj).attr('top');
+   deltaWidth = $(obj).css('left').replace('px', '') - $(obj).attr('left');
+
+   newHeight = parseInt(initialHeight)+parseInt(deltaHeight);
+   newWidth =  parseInt(initialWidth)+parseInt(deltaWidth);
+
+   $('#special'+id).css('height', newHeight+'px');
+   $('#special'+id).css('width', newWidth+'px');
+   $('#outerdiv'+id).css('height', newHeight+'px');
+   $('#outerdiv'+id).css('width', newWidth+'px');
+   $('#title'+id).css('width', newWidth+'px');
+   $('#dragger'+id).css('width', (newWidth-80)+'px');
+   //$('#dragger'+id).css('left', $(obj).css('left'));
+   
+   $(obj).attr('left', $(obj).css('left').replace('px', ''));
+   $(obj).attr('top', $(obj).css('top').replace('px', ''));
+
+   $('#special'+id).attr('old-height', $('#special'+id).css('height'));
+
+   //$("#sticky-container").css("height", getDocumentHeight());
+   //height handling
+   //height = getCurrDocumentHeight();
+   //parent.updateHeight(height);
+}
+
+/*window.onbeforeunload = confirmExit;
+function confirmExit()
+{
+   if(allowConfirm){
+       return "Really?";
+   }
+   else
+      allowConfirm = true;
+}*/
+
+$(document).click(function(e){   
+     var evt = e ? e:window.event;
+     //Ctrl
+     if(evt.ctrlKey){
+      jQuery.fn.stickyNotes.createNote(e.pageY, e.pageX);
+      $("#sticky-container").css("height", getDocumentHeight()-50);
+		return false;
+     }
+     //Alt 18
+     if(evt.altKey){
+        createFrame(e.pageX , e.pageY);
+     }
+});
+
+function keyPressed(event, id, url){
+   if(event.keyCode=='13'){
+      host = url.replace("http://", "");
+      host = host.replace("https://", "");
+      host = url.split("//")[0]+"//"+host.split("/")[0];
+      $("#favicon"+id).attr("src", host+"/favicon.ico");
+      loadUrl(id, url);
+      $("#agoto-"+id).attr("href",url);
+      doEndJob(id);
+   }
+}
+
+function cancel(){
+   $("#title-place").html("<?php echo $page->PgeTitle;?>");
+   $("#description-place").hide();
+   $("#header").css("height","45px");
+   //$("#header").css("z-index","9999999");
+}
+
+
+</script>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29376273-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+<body id="notes">
+<div style="position: fixed; top: 0px; right: 0px" class="meta_text"><span onclick="createFrame(200,200);" class="icon icon_web" title="Add a glance(Alt+click)" style="float:right; margin-right:2px;margin-left:10px;"></span></div>
+<div style="position: fixed; bottom: 0px; right: 10px" class="meta_text">powered by <a href="http://dailyglancer.com" target="_top"><img title="Dailyglancer" src="http://dailyglancer.com/favicon.ico" border="0"></a></div>	
+</body>
+</html>
