@@ -37,6 +37,7 @@ If you click on the favicon of the frame the frame will become clickable.
 Double click on the url to add or change the url.
 Drag n drop is on the title bar.
 Resizing is on the left bottom side of the frame.
+You could drag the inner part of the frame in order to display the content you'd want to be visible in a glance.
 
 To finish with
 ===========
