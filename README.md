@@ -7,7 +7,7 @@ How to
 ===========
 Once you've downloaded the zip just go to the following page /widget/frame.html.
 It's all there.
-Online demo here: http://labs.dailyglancer.com/glancemaker/widget/frame.html
+Online demo here: http://dailyglancer.com/glancemaker/widget/frame.html
 
 API
 ===========
